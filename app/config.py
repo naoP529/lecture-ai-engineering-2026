@@ -34,3 +34,23 @@ def get_api_key() -> str:
             "   （左下の「Codespaces」→「Stop Current Codespace」→ 再度開く）"
         )
     return key
+
+def model_configs(name) -> dict:
+    configs = {
+        "light_response": {
+            "model": "gemini-3.5-flash-lite",
+            "temperature": 0.7,
+            "max_output_tokens": 256,
+        },
+        "solid_response": {
+            "model": "gemini-3.5-flash",
+            "temperature": 0.95,
+            "max_output_tokens": 2048,
+        },
+        "creative_response": {
+            "model": "gemini-3.1-pro-preview",
+            "temperature": 1.0,
+            "max_output_tokens": 4096,
+        },
+    }
+    return configs.get(name, configs["light_response"])
