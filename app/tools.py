@@ -7,6 +7,7 @@
 import json
 from functools import cache
 from pathlib import Path
+import random
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 MAX_RESULTS = 3
@@ -77,3 +78,39 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def make_quiz(lecture: int) -> str:
+    """指定した回の用語から1つを選び、「この用語の意味は？」という問題と答えを返す。
+
+    講義内容の確認問題を出したいときに使う。
+    """
+
+    lec_term = []
+    path = DATA_DIR / "glossary.json"
+    with open(path, "r") as f:
+        data = json.load(f)
+        terms = data.get("terms", [])
+
+        for t in terms:
+            if t["lecture"] == lecture:
+                lec_term.append({"term":t["term"], "definition":t["definition"]})
+
+    choice = random.choice(lec_term)
+    return choice
+
+def save_learning_log(
+    summary:str, log_name:str
+) -> str:
+    """学習内容をファイルに学習ログとして保存する。
+
+    利用者が学習内容の記録を依頼したときに使う。ファイルへの書き込みには
+    Pydantic AI を通じた利用者の承認が必要で、承認されるまで保存しない。
+    """
+    path = Path("learning_log") / f"{log_name}.txt"
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(summary, encoding="utf-8")
+        return f"学習ログを {path} に保存しました。"
+    except OSError as e:
+        return f"学習ログの保存中にエラーが発生しました: {e}"
